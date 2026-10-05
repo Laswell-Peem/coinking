@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COINKING - บริการเติมเกมออนไลน์ 24 ชม.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
+                    colors: { brand: { 50: '#fdf2f8', 100: '#fce7f3', 200: '#fbcfe8', 400: '#f472b6', 500: '#ec4899', 600: '#db2777', 900: '#831843' } }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="antialiased min-h-screen flex flex-col">
+
+    <nav class="fixed w-full z-50 glass-card border-b border-brand-100 shadow-sm">
+        <div class="wrap px-4 py-2 md:py-0">
+            <!-- ใช้ flex-wrap เพื่อให้เรียงขึ้นบรรทัดใหม่ได้เมื่อจอแคบ -->
+            <div class="flex flex-wrap items-center justify-between md:h-16 gap-y-2">
+
+                <!-- 1. โลโก้ (ซ้ายบน) -->
+                <div class="flex-shrink-0 cursor-pointer" onclick="navigateTo('home')">
+                    <span
+                        class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-rose-400">
+                        COIN<span class="text-gray-800">KING</span>
+                    </span>
+                </div>
+
+                <!-- 2. ปุ่มบัญชี / เข้าสู่ระบบ (ขวาบน) -->
+                <div class="order-2 md:order-3 flex-shrink-0">
+
+                    <!-- สำหรับผู้ยังไม่ล็อกอิน -->
+                    <div id="nav-guest" class="flex space-x-2 items-center">
+                        <button onclick="navigateTo('login')"
+                            class="text-gray-600 hover:text-brand-500 px-2 py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap">เข้าสู่ระบบ</button>
+                        <button onclick="navigateTo('register')"
+                            class="bg-brand-500 hover:bg-brand-600 text-white px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all shadow-md whitespace-nowrap">สมัครสมาชิก</button>
+                    </div>
+
+                    <!-- สำหรับผู้ล็อกอินแล้ว -->
+                    <div id="nav-user" class="hidden items-center gap-2">
+                        <!-- ยอดเหรียญ -->
+                        <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-full border border-brand-200 shadow-sm cursor-pointer hover:bg-brand-50"
+                            onclick="navigateTo('deposit')">
+                            <span class="text-yellow-500 text-xs sm:text-sm">🪙</span>
+                            <span id="nav-balance" class="text-brand-600 font-bold text-xs sm:text-sm">0</span>
+                        </div>
+                        <!-- ปุ่มออกจากระบบ -->
+                        <button onclick="handleLogout()"
+                            class="text-red-500 hover:text-red-600 px-3 py-1 text-xs font-medium transition-colors bg-red-50 hover:bg-red-100 rounded-full border border-red-100 whitespace-nowrap">ออกจากระบบ</button>
+                    </div>
+
+                </div>
+
+                <!-- 3. เมนูหลัก (บรรทัดล่างสุดในมือถือ / ตรงกลางในคอม) -->
+                <div
+                    class="order-3 md:order-2 w-full md:w-auto md:flex-1 flex overflow-x-auto justify-start md:justify-center space-x-2 md:space-x-4 pb-1 md:pb-0 scrollbar-hide">
+                    <button onclick="navigateTo('home')"
+                        class="whitespace-nowrap text-gray-600 hover:text-brand-500 px-2 sm:px-3 py-2 rounded-md text-sm font-medium transition-colors">หน้าแรก</button>
+                    <button onclick="navigateTo('deposit')"
+                        class="whitespace-nowrap text-gray-600 hover:text-brand-500 px-2 sm:px-3 py-2 rounded-md text-sm font-medium transition-colors">เติมเหรียญ</button>
+                    <button onclick="navigateTo('contact')"
+                        class="whitespace-nowrap text-gray-600 hover:text-brand-500 px-2 sm:px-3 py-2 rounded-md text-sm font-medium transition-colors">ติดต่อเรา</button>
+                    <button id="nav-menu-profile" onclick="navigateTo('profile')"
+                        class="hidden whitespace-nowrap text-gray-600 hover:text-brand-500 px-2 sm:px-3 py-2 rounded-md text-sm font-medium transition-colors">บัญชีของฉัน</button>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- ปุ่มสำหรับผู้ยังไม่ล็อกอิน -->
+    <div id="nav-guest" class="hidden md:flex space-x-3">
+        <button onclick="navigateTo('login')"
+            class="text-gray-600 hover:text-brand-500 px-4 py-2 text-sm font-medium transition-colors">เข้าสู่ระบบ</button>
+        <button onclick="navigateTo('register')"
+            class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all shadow-[0_4px_14px_0_rgba(236,72,153,0.39)]">สมัครสมาชิก</button>
+    </div>
+
+
+
+    <!-- ทุกหน้าอยู่ใน main -->
+    <main class="flex-grow pt-20 pb-12">
+
+        <!-- หน้าแรก -->
+        <section id="page-home" class="page-section active wrap">
+            <div
+                class="relative rounded-3xl overflow-hidden mb-12 shadow-xl shadow-brand-100 group cursor-pointer border-4 border-white">
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-brand-900/90 via-brand-800/60 to-transparent z-10 mix-blend-multiply">
+                </div>
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                    alt="Gaming Banner"
+                    class="w-full h-64 md:h-80 object-cover transform group-hover:scale-105 transition-transform duration-700">
+                <div class="absolute inset-0 z-20 flex flex-col justify-center px-8 md:px-16">
+                    <span
+                        class="bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full w-max mb-3 border border-white/30 tracking-wider">PROMOTION</span>
+                    <h1 class="text-3xl md:text-5xl font-bold text-white mb-4 text-shadow-sm">เติม ROV
+                        วันนี้<br>รับโบนัสคูปอง 20%</h1>
+                    <button onclick="openGame('Arena of Valor', 'https://placehold.co/300x400/fce7f3/db2777?text=ROV')"
+                        class="bg-white text-brand-600 hover:bg-brand-50 hover:scale-105 px-6 py-3 rounded-full font-bold w-max transition-all shadow-lg">เติมเงินเลย</button>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                <h2 class="text-2xl font-bold flex items-center gap-2 text-gray-800">
+                    <span class="w-1.5 h-6 bg-brand-500 rounded-full inline-block"></span>
+                    เลือกเกมที่ต้องการ
+                </h2>
+                <div class="flex gap-2">
+                    <button id="btn-filter-all" onclick="filterGames('all')"
+                        class="px-4 py-1.5 rounded-full bg-brand-500 text-sm text-white shadow-md transition">ทั้งหมด</button>
+                    <button id="btn-filter-mobile" onclick="filterGames('mobile')"
+                        class="px-4 py-1.5 rounded-full bg-white border border-brand-200 text-sm text-gray-600 hover:text-brand-600 transition">เกมมือถือ</button>
+                    <button id="btn-filter-pc" onclick="filterGames('pc')"
+                        class="px-4 py-1.5 rounded-full bg-white border border-brand-200 text-sm text-gray-600 hover:text-brand-600 transition">เกมพีซี</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6" id="games-container">
+
+                <!-- การ์ดเกม Valorant -->
+                <div data-type="pc" onclick="openGame('Valorant', 'Valo.jpg')"
+                    class="game-card glass-card rounded-2xl overflow-hidden hover:-translate-y-2 transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-brand-300">
+                    <div class="relative pt-[133%] overflow-hidden">
+                        <img src="Valo.jpg" alt="Valorant"
+                            class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <div class="p-3 text-center border-t border-brand-100 bg-white/60 relative z-10">
+                        <h3 class="font-bold text-gray-800 truncate">Valorant</h3>
+                        <p
+                            class="text-xs text-brand-600 mt-1 font-medium bg-brand-50 rounded-full py-0.5 w-max mx-auto px-2">
+                            เกมพีซี</p>
+                    </div>
+                </div>
+
+                <!-- การ์ดเกม Arena of Valor (ROV) -->
+                <div data-type="mobile" onclick="openGame('Arena of Valor', 'Aov.jpg')"
+                    class="game-card glass-card rounded-2xl overflow-hidden hover:-translate-y-2 transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-brand-300">
+                    <div class="relative pt-[133%] overflow-hidden">
+                        <img src="Aov.jpg" alt="Arena of Valor"
+                            class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <div class="p-3 text-center border-t border-brand-100 bg-white/60 relative z-10">
+                        <h3 class="font-bold text-gray-800 truncate">Arena of Valor</h3>
+                        <p
+                            class="text-xs text-brand-600 mt-1 font-medium bg-brand-50 rounded-full py-0.5 w-max mx-auto px-2">
+                            เกมมือถือ</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- หน้าเข้าสู่ระบบ -->
+        <section id="page-login" class="page-section max-w-md mx-auto px-4 mt-10">
+            <div class="glass p-8 relative overflow-hidden">
+                <div class="text-center mb-8 relative z-10">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">เข้าสู่ระบบ</h2>
+                </div>
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5 relative z-10">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">อีเมล หรือ ชื่อผู้ใช้งาน</label>
+                        <input type="text" id="login-username" required
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:border-brand-500 transition-all shadow-sm">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="block text-sm font-medium text-gray-700">รหัสผ่าน</label>
+                        </div>
+                        <input type="password" id="login-password" required
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:border-brand-500 transition-all shadow-sm">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-4">เข้าสู่ระบบ</button>
+                    <div class="text-center pt-2">
+                        <button type="button" onclick="navigateTo('forgot-password')"
+                            class="text-xs text-brand-500 hover:text-brand-600 font-bold transition-colors">ลืมรหัสผ่าน?</button>
+                    </div>
+                </form>
+                <div class="mt-6 text-center text-sm text-gray-600">
+                    ยังไม่มีบัญชีใช่หรือไม่? <button onclick="navigateTo('register')"
+                        class="text-brand-600 hover:text-brand-500 font-bold">สมัครสมาชิกฟรี</button>
+                </div>
+                <div class="mt-6 pt-4 border-t border-brand-100/50 text-center relative z-10">
+                    <a href="admin.html"
+                        class="inline-flex items-center justify-center gap-1.5 text-xs font-medium text-gray-400 hover:text-brand-500 transition-colors px-4 py-2 rounded-full hover:bg-brand-50 border border-transparent hover:border-brand-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4">
+                            </path>
+                        </svg>
+                        เข้าสู่ระบบแอดมิน
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- หน้าสมัครสมาชิก -->
+        <section id="page-register" class="page-section max-w-md mx-auto px-4 mt-4">
+            <div class="glass p-8 relative overflow-hidden">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">สมัครสมาชิก</h2>
+                </div>
+                <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ใช้งาน</label>
+                        <input type="text" id="reg-username" required
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
+                        <input type="email" id="reg-email" required
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
+                        <input type="password" id="reg-password" required
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-2.5">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-2">ยืนยันการสมัครสมาชิก</button>
+                </form>
+                <div class="mt-6 text-center text-sm text-gray-600">
+                    มีบัญชีอยู่แล้ว? <button onclick="navigateTo('login')"
+                        class="text-brand-600 hover:text-brand-500 font-bold">เข้าสู่ระบบ</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- หน้าเติมเหรียญ -->
+        <section id="page-deposit" class="page-section max-w-4xl mx-auto px-4 sm:px-6 mt-4">
+            <div class="glass p-6 md:p-10">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-3 flex items-center justify-center gap-2">
+                        <span class="text-yellow-500 drop-shadow-md">🪙</span> เติมเหรียญ (COINKING Coin)
+                    </h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">เลือกจำนวนเงิน</h3>
+                        <div class="grid grid-cols-2 gap-3 mb-5">
+                            <button type="button" onclick="selectDepositAmount(50)"
+                                class="deposit-btn border border-brand-200 bg-white rounded-xl py-4 text-gray-700 font-bold text-lg">50
+                                🪙</button>
+                            <button type="button" onclick="selectDepositAmount(100)"
+                                class="deposit-btn border border-brand-200 bg-white rounded-xl py-4 text-gray-700 font-bold text-lg">100
+                                🪙</button>
+                            <button type="button" onclick="selectDepositAmount(300)"
+                                class="deposit-btn border border-brand-200 bg-white rounded-xl py-4 text-gray-700 font-bold text-lg">300
+                                🪙</button>
+                            <button type="button" onclick="selectDepositAmount(500)"
+                                class="deposit-btn border border-brand-200 bg-white rounded-xl py-4 text-gray-700 font-bold text-lg">500
+                                🪙</button>
+                        </div>
+                        <input type="number" id="custom-deposit" oninput="customDepositInput()"
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-3 text-gray-800"
+                            placeholder="ระบุจำนวนเงิน (ขั้นต่ำ 20)">
+                    </div>
+                    <div
+                        class="bg-white border-2 border-brand-100 rounded-3xl p-8 flex flex-col items-center text-center shadow-lg">
+                        <p class="text-gray-600 text-sm mb-4">ยอดชำระ: <span id="deposit-display"
+                                class="font-bold text-brand-600 text-2xl">0</span> บาท</p>
+                        <p class="text-brand-500 text-sm mb-6 font-mono font-medium">พร้อมเพย์: 099-999-9999</p>
+                        <div class="w-full mb-4">
+                            <label for="deposit-slip"
+                                class="w-full flex flex-col items-center justify-center gap-2 px-4 py-6 bg-white border-2 border-dashed border-brand-200 rounded-2xl text-brand-600 font-bold cursor-pointer hover:border-brand-500 hover:bg-brand-50 transition-all">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                <span class="text-sm">คลิกเพื่อเลือกรูปสลิป</span>
+                                <span class="text-xs font-medium text-gray-400">รองรับไฟล์ JPG / PNG</span>
+                            </label>
+                            <input type="file" id="deposit-slip" accept="image/*" class="hidden"
+                                onchange="handleDepositSlip(this)">
+                            <div id="deposit-slip-preview"
+                                class="hidden items-center gap-3 mt-3 p-3 bg-brand-50 border border-brand-100 rounded-xl">
+                                <img id="deposit-slip-thumb" src="" alt="สลิป"
+                                    class="w-12 h-12 object-cover rounded-lg border border-brand-100">
+                                <div class="text-left min-w-0">
+                                    <p id="deposit-slip-name" class="text-xs font-bold text-gray-700 truncate"></p>
+                                    <p id="deposit-slip-size" class="text-xs text-gray-400"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="submitDeposit()"
+                            class="w-full py-4 bg-brand-500 text-white font-bold rounded-xl text-lg hover:bg-brand-600">ยืนยันการแจ้งโอนเงิน</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- หน้าเติมเกม -->
+        <section id="page-topup" class="page-section wrap mt-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="glass text-center">
+                        <img id="topup-game-icon" src="" alt="Icon"
+                            class="w-24 h-24 mx-auto rounded-2xl object-cover mb-4">
+                        <h2 id="topup-game-title" class="text-2xl font-bold">Game Title</h2>
+                    </div>
+                    <div class="glass">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Player ID (UID)</label>
+                        <input type="text" id="topup-uid" placeholder="กรอก UID ของคุณ"
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-3">
+                    </div>
+                </div>
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">เลือกแพ็กเกจเติมเงิน</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="package-grid"></div>
+                    </div>
+                    <div class="glass flex flex-col sm:flex-row items-center justify-between">
+                        <div class="text-center sm:text-left mb-4 sm:mb-0">
+                            <p class="text-sm font-bold text-gray-600">ยอดชำระสุทธิ</p>
+                            <div class="text-4xl font-bold text-brand-600"><span id="total-price">0</span> 🪙</div>
+                        </div>
+                        <button onclick="handleCheckout()"
+                            class="px-10 py-4 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600">ยืนยันคำสั่งซื้อ</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- หน้าติดต่อเรา -->
+        <section id="page-contact" class="page-section max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-3">ติดต่อเรา</h2>
+                <p class="text-gray-500 bg-white px-6 py-2 rounded-full inline-block shadow-sm">แอดมินพร้อมดูแล 24
+                    ชั่วโมง 💖</p>
+            </div>
+            <div class="glass md:p-8 text-center max-w-2xl mx-auto">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">บริษัท คอยน์คิง จำกัด</h3>
+                <p class="text-gray-600 mb-2">Line: @CoinKing</p>
+                <p class="text-gray-600 mb-2">Email: support@coinking.com</p>
+            </div>
+        </section>
+
+        <!-- บัญชีของฉัน -->
+        <section id="page-profile" class="page-section max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800">บัญชีของฉัน</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+                <div class="md:col-span-1 space-y-6">
+                    <div class="glass text-center">
+                        <div
+                            class="w-24 h-24 rounded-full bg-brand-100 flex items-center justify-center text-4xl font-bold text-brand-500 mx-auto mb-4">
+                            P</div>
+                        <h3 class="text-xl font-bold text-gray-800" id="profile-username">User</h3>
+                        <div class="bg-brand-50 rounded-2xl p-4 my-4">
+                            <p class="text-xs text-gray-500 font-medium">ยอดเหรียญคงเหลือ</p>
+                            <div class="text-2xl font-bold text-brand-600"><span id="profile-coin-balance">0</span> 🪙
+                            </div>
+                        </div>
+                        <button onclick="navigateTo('deposit')"
+                            class="w-full py-2.5 bg-brand-500 text-white font-bold rounded-xl">เติมเหรียญเพิ่ม</button>
+                    </div>
+                </div>
+                <div class="md:col-span-2 space-y-6">
+                    <div class="glass">
+                        <h3 class="text-lg font-bold text-gray-800 mb-5">ประวัติการทำรายการล่าสุด</h3>
+                        <!-- เติม id ตรงนี้ เพื่อให้ JavaScript หาเจอ -->
+                        <div id="history-container" class="space-y-3 text-sm">
+                            <p class="text-gray-500 text-center py-4">กำลังโหลดข้อมูล...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ================= เพิ่มใหม่: หน้าลืมรหัสผ่าน ================= -->
+        <section id="page-forgot-password" class="page-section max-w-md mx-auto px-4 mt-10" style="display: none;">
+            <div class="glass p-8 relative overflow-hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">ลืมรหัสผ่าน</h2>
+                    <p class="text-sm text-gray-500">กรุณากรอกอีเมลที่ใช้สมัครบัญชี</p>
+                </div>
+                <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">อีเมลของคุณ</label>
+                        <input type="email" id="forgot-email" required
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:border-brand-500 transition-all shadow-sm">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md">ยืนยันอีเมล</button>
+                    <button type="button" onclick="navigateTo('login')"
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3.5 rounded-xl transition-all mt-3">กลับไปหน้าเข้าสู่ระบบ</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= เพิ่มใหม่: หน้าตั้งรหัสผ่านใหม่ ================= -->
+        <section id="page-reset-password" class="page-section max-w-md mx-auto px-4 mt-10" style="display: none;">
+            <div class="glass p-8 relative overflow-hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">ตั้งรหัสผ่านใหม่</h2>
+                </div>
+                <form id="resetPasswordForm" onsubmit="handleResetPassword(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">รหัสผ่านใหม่</label>
+                        <input type="password" id="reset-new-password" required minlength="4"
+                            class="w-full bg-white border border-brand-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:border-brand-500 transition-all shadow-sm">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md">บันทึกรหัสผ่านใหม่</button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ส่วนท้ายเว็บไซต์ -->
+    <footer class="bg-white border-t border-brand-100 mt-8">
+        <div class="wrap py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <span
+                        class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-rose-400">
+                        COIN<span class="text-gray-800">KING</span>
+                    </span>
+                    <p class="text-sm text-gray-500 mt-3 max-w-sm leading-relaxed">
+                        บริการเติมเกมออนไลน์ 24 ชั่วโมง สำหรับนักเล่นเกมทุกระดับ รวมถึง ROV, Valorant และเกมยอดนิยมอื่น
+                        ๆ
+                    </p>
+                    <div
+                        class="flex items-center gap-2 mt-4 text-xs font-bold text-brand-600 bg-brand-50 border border-brand-100 rounded-full px-3 py-1.5 w-max">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        ระบบออนไลน์ปกติ
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800 mb-4">เมนู</h3>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><button onclick="navigateTo('home')"
+                                class="hover:text-brand-500 transition-colors">หน้าแรก</button></li>
+                        <li><button onclick="navigateTo('deposit')"
+                                class="hover:text-brand-500 transition-colors">เติมเหรียญ</button></li>
+                        <li><button onclick="navigateTo('profile')"
+                                class="hover:text-brand-500 transition-colors">บัญชีของฉัน</button></li>
+                        <li><button onclick="navigateTo('contact')"
+                                class="hover:text-brand-500 transition-colors">ติดต่อเรา</button></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800 mb-4">ติดต่อเรา</h3>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li>Line: @CoinKing</li>
+                        <li>Email: support@coinking.com</li>
+                        <li>โทร: 099-999-9999</li>
+                        <li>บริการทุกวัน 24 ชั่วโมง</li>
+                    </ul>
+                </div>
+            </div>
+            <div
+                class="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p class="text-xs text-gray-400">© 2026 บริษัท คอยน์คิง จำกัด · สงวนลิขสิทธิ์</p>
+                <a href="admin.html" target="_blank"
+                    class="text-xs text-gray-400 hover:text-brand-500 transition-colors">สำหรับผู้ดูแลระบบ</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- กล่องแจ้งเตือน สร้างจาก showToast() ใน main.js -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-3"></div>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

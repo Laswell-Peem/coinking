@@ -1,0 +1,60 @@
+body {
+    background-color: #fdf2f8; 
+    color: #1f2937; 
+    overflow-x: hidden;
+}
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #fce7f3; 
+}
+::-webkit-scrollbar-thumb {
+    background: #f472b6; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #ec4899; 
+}
+.page-section {
+    display: none;
+    animation: fadeIn 0.4s ease-in-out;
+}
+.page-section.active {
+    display: block;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(252, 231, 243, 0.9);
+    box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.1), 0 8px 10px -6px rgba(236, 72, 153, 0.1);
+}
+.wrap {
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+@media (min-width: 640px) { .wrap { padding: 0 1.5rem; } }
+@media (min-width: 1024px) { .wrap { padding: 0 2rem; } }
+.glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(252, 231, 243, 0.9);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.1), 0 8px 10px -6px rgba(236, 72, 153, 0.1);
+}
+.panel {
+    background: #fff;
+    border: 1px solid #fce7f3;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.1);
+}

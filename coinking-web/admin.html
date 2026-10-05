@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - COINKING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] }, colors: { brand: { 50: '#fdf2f8', 100: '#fce7f3', 200: '#fbcfe8', 400: '#f472b6', 500: '#ec4899', 600: '#db2777' } } } } }
+    </script>
+</head>
+
+<body class="antialiased h-screen flex overflow-hidden">
+    <!-- หน้าเข้าสู่ระบบแอดมิน: POST /api/admin/login (ต้องคืน token ของ role=admin) -->
+    <div id="admin-login-page"
+        class="w-full min-h-screen h-screen flex items-center justify-center bg-[#fdf2f8] z-50 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-brand-100 relative">
+            <a href="index.html" title="กลับไปหน้าหลัก"
+                class="absolute top-5 left-5 w-9 h-9 flex items-center justify-center rounded-full text-gray-400 hover:text-brand-600 hover:bg-brand-50 border border-gray-200 hover:border-brand-200 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <div class="text-center mb-8">
+                <div
+                    class="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                    CK</div>
+                <h2 class="text-2xl font-bold text-gray-800">COINKING ADMIN</h2>
+                <p class="text-gray-500 text-sm mt-1">ระบบจัดการหลังบ้าน</p>
+            </div>
+            <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Username</label>
+                    <input type="text" id="admin-user"
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Password</label>
+                    <input type="password" id="admin-pass"
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-brand-500 outline-none">
+                </div>
+                <button type="submit"
+                    class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-xl transition-all">เข้าสู่ระบบจัดการ</button>
+            </form>
+            <a href="index.html"
+                class="mt-5 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-gray-500 hover:text-brand-600 bg-gray-50 hover:bg-brand-50 border border-gray-200 hover:border-brand-100 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                ย้อนกลับไปหน้าหลัก
+            </a>
+        </div>
+    </div>
+
+    <!-- ทั้ง dashboard ต้องยืนยันสิทธิ์ admin ก่อนโหลดข้อมูลทุกครั้ง (GET /api/admin/...) -->
+    <div id="admin-dashboard-page" class="w-full h-full flex hidden">
+        <aside class="w-64 bg-white border-r border-brand-100 flex flex-col shadow-sm relative z-10">
+            <div class="h-16 flex items-center px-6 border-b border-brand-100">
+                <span class="text-xl font-bold text-brand-500">COINKING <span class="text-gray-800">Admin</span></span>
+            </div>
+            <nav id="admin-nav" class="flex-1 p-4 space-y-2"></nav>
+            <div class="p-4 border-t border-brand-100">
+                <button onclick="handleAdminLogout()"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold transition-colors">ออกจากระบบ</button>
+            </div>
+        </aside>
+        <main class="flex-1 overflow-y-auto p-8 relative">
+            <!-- ภาพรวม: การ์ดใน #overview-stats + รายการใน #overview-activity -> GET /api/admin/summary -->
+            <section id="view-overview">
+                <header class="flex justify-between items-center mb-8">
+                    <h1 class="text-2xl font-bold text-gray-800">ภาพรวม</h1>
+                    <span class="text-sm text-gray-400">อัปเดตล่าสุด <span id="overview-updated">-</span></span>
+                </header>
+                <div id="overview-stats" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"></div>
+                <div class="panel">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3">รายการล่าสุด</h2>
+                    <ul id="overview-activity" class="space-y-3"></ul>
+                </div>
+            </section>
+
+            <!-- ตรวจสอบรายการ: สลิปค้างใน #slip-table-body -> GET /api/admin/deposits?status=pending -->
+            <section id="view-deposits" class="hidden">
+                <header class="flex justify-between items-center mb-8">
+                    <h1 class="text-2xl font-bold text-gray-800">ตรวจสอบรายการ</h1>
+                </header>
+                <div class="panel">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3">
+                        รายการแจ้งโอนเงินล่าสุด (รอยืนยัน)</h2>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm">
+                                <th class="p-4 rounded-l-xl">รหัสอ้างอิง</th>
+                                <th class="p-4">ชื่อผู้ใช้</th>
+                                <th class="p-4">จำนวนเงิน</th>
+                                <th class="p-4">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="slip-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ประวัติการใช้เหรียญ: การ์ดใน #coin-stats + ตารางใน #coin-history-body -> GET /api/admin/transactions -->
+            <section id="view-coin-history" class="hidden">
+                <header class="flex justify-between items-center mb-8">
+                    <h1 class="text-2xl font-bold text-gray-800">ประวัติการใช้เหรียญ</h1>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="coin-history-search" oninput="fetchCoinHistory()"
+                            placeholder="ค้นหาชื่อผู้ใช้ / รหัส"
+                            class="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:border-brand-500 outline-none">
+                        <select id="coin-history-game" onchange="fetchCoinHistory()"
+                            class="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:border-brand-500 outline-none">
+                            <option value="all">ทุกเกม</option>
+                            <option value="Valorant">Valorant</option>
+                            <option value="Arena of Valor">Arena of Valor</option>
+                        </select>
+                        <select id="coin-history-type" onchange="fetchCoinHistory()"
+                            class="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:border-brand-500 outline-none">
+                            <option value="all">ทั้งหมด</option>
+                            <option value="ซื้อแพ็กเกจ">ซื้อแพ็กเกจ</option>
+                            <option value="เติมเหรียญ">เติมเหรียญ</option>
+                        </select>
+                    </div>
+                </header>
+                <div id="coin-stats" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"></div>
+                <div class="panel">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3">
+                        รายการใช้เหรียญของผู้ใช้</h2>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm">
+                                <th class="p-4 rounded-l-xl">รหัสอ้างอิง</th>
+                                <th class="p-4">ชื่อผู้ใช้</th>
+                                <th class="p-4">เกม</th>
+                                <th class="p-4">รายการ</th>
+                                <th class="p-4">ประเภท</th>
+                                <th class="p-4">จำนวน</th>
+                                <th class="p-4">เวลา</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coin-history-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="js/admin.js"></script>
+</body>
+
+</html>
